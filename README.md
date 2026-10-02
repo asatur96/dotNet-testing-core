@@ -1,19 +1,23 @@
 # dotNet-testing-core
 
-C# backend testing framework modeled on the TypeScript testing-core and ui-api-tests syntax.
+C# backend testing core modeled on the TypeScript testing-core project. It has no Playwright dependency.
 
-## Authoring concepts
+## Architecture
 
-- SuiteAttribute names a test class, matching the role of Suite around a TypeScript describe block.
-- RunWith.Cases expands language and platform combinations while carrying authorization and user-query data. Use it with xUnit MemberData.
-- TestStep.Run wraps an action, expected result, and async callback. TestContext records pass/fail status and API/validation artifacts.
-- BackendFixture shares the HTTP transport; CreateScope creates a fresh context and assertions for every test case.
-- AzureDevOpsAdapter reads, creates, and updates Test Case work items and creates Bug work items. It accepts a token provider, so credentials are never stored in source.
-- TestCaseSync maps an @C123 case marker to an update; without a marker it creates a case from recorded test steps. Invoke this explicitly after a reviewed test run.
-- Azure Pipelines publishes TRX results to the Tests tab. Test Plans cases and Boards bugs use the adapter only when explicitly invoked; failed runs do not automatically create duplicate Bugs.
+- TestingCore: domain contexts, artifacts, Suite/RunWith model, and generators. This project has no infrastructure references.
+- TestingCore.Ports: contracts for HTTP testing, configuration, credentials, Test Cases, Bugs, traceability, and reporting.
+- TestingCore.Application: assertions and Test Case synchronization.
+- TestingCore.Infrastructure: HttpClient, Azure DevOps, process environment, credentials, and integration registry.
+- TestingCore.Tests: executable examples and contract-focused tests.
 
-AuthoringTests shows Suite, RunWith, and TestStep together. BackendTests exercises the context and assertions. The included HTTP handler simulates a backend; replace it with your real backend base URL or WebApplicationFactory.
+The dependency direction is Infrastructure -> Ports/Application -> Domain. The test project is the composition root for examples. When copied under the backend monolith, reference the backend source project directly from TestingCore.Tests and construct its services/controllers through your production DI container or WebApplicationFactory. The HTTP adapter is only for tests that cross an HTTP boundary.
+
+## Authoring and integrations
+
+AuthoringTests shows Suite, RunWith, and TestStep. RunWith defaults to API platform and the EN/HY/RU language matrix; override these per suite. Each test gets a fresh TestContext. TestCaseSync understands @C123 markers but is opt-in to avoid unexpected Azure writes.
+
+Set AZDO_ENABLED=true, AZDO_ORGANIZATION, and AZDO_PROJECT for Azure composition. AzureCredentialProvider uses SYSTEM_ACCESSTOKEN in Pipelines or AZDO_PAT locally. The credential is resolved only when a request is made. Add an integration by registering an IntegrationDefinition in EnvConfigAdapter and an IIntegrationFactory in IntegrationRegistry; keep its secrets behind ISecretPort.
 
 Run locally: dotnet test dotNet-testing-core.sln
 
-Configure AzureDevOpsAdapter with your organization, project, an HttpClient, and a token provider. The live Azure connection cannot be exercised until those values and permissions are supplied.
+See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. The live Azure connection requires your organization and project.

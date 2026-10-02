@@ -1,4 +1,6 @@
-namespace TestingCore;
+using TestingCore.Domain;
+
+namespace TestingCore.Ports;
 
 public sealed record TestCaseReference(string ExternalId, string Title);
 public sealed record TestCaseDefinition(string Title, string Description, IReadOnlyList<StepResult> Steps);
@@ -19,4 +21,10 @@ public interface IIssueTrackingPort
 public interface IReportingPort
 {
     Task OnTestFinishAsync(TestContext context, CancellationToken cancellationToken = default);
+}
+
+public interface ITraceabilityPort
+{
+    Task LinkRequirementToCaseAsync(int requirementId, int caseId, CancellationToken cancellationToken = default);
+    Task LinkBugToCaseAsync(int bugId, int caseId, CancellationToken cancellationToken = default);
 }

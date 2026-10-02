@@ -1,4 +1,7 @@
-using TestingCore;
+using TestingCore.Domain;
+using TestingCore.Ports;
+using TestingCore.Application;
+using TestingCore.Infrastructure;
 
 namespace TestingCore.Tests;
 

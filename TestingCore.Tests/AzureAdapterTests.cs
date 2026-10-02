@@ -1,6 +1,9 @@
 using System.Net;
 using System.Text.Json;
-using TestingCore;
+using TestingCore.Domain;
+using TestingCore.Ports;
+using TestingCore.Application;
+using TestingCore.Infrastructure;
 
 namespace TestingCore.Tests;
 
@@ -11,7 +14,7 @@ public sealed class AzureAdapterTests
     {
         var handler = new CaptureHandler("""{"id":42}""");
         using var http = new HttpClient(handler);
-        var azure = new AzureDevOpsAdapter(http, "org", "project", _ => Task.FromResult("token"));
+        var azure = new AzureDevOpsAdapter(http, "org", "project", new StaticCredentials());
         var result = await azure.CreateCaseAsync(new TestCaseDefinition("Health", "API health",
             [new StepResult("GET /health", "200", StepStatus.Passed, null, [])]));
 
@@ -27,13 +30,34 @@ public sealed class AzureAdapterTests
     {
         var handler = new CaptureHandler("""{"id":81}""");
         using var http = new HttpClient(handler);
-        var azure = new AzureDevOpsAdapter(http, "org", "project", _ => Task.FromResult("token"));
+        var azure = new AzureDevOpsAdapter(http, "org", "project", new StaticCredentials());
         var id = await azure.CreateBugAsync(new Incident("Failure", "Repro steps", "2 - High", "https://run"));
 
         Assert.Equal("81", id);
         Assert.Contains("/$Bug?api-version=7.1", handler.Path);
         Assert.Contains("Microsoft.VSTS.TCM.ReproSteps", handler.Body);
         Assert.Contains("Repro steps", handler.Body);
+    }
+
+    [Fact]
+    public async Task Traceability_links_requirement_and_bug_to_case()
+    {
+        var handler = new CaptureHandler("""{"id":1}""");
+        using var http = new HttpClient(handler);
+        var azure = new AzureDevOpsAdapter(http, "org", "project", new StaticCredentials());
+
+        await azure.LinkRequirementToCaseAsync(10, 42);
+        Assert.Contains("Microsoft.VSTS.Common.TestedBy-Forward", handler.Body);
+        Assert.Contains("/workitems/10?api-version=7.1", handler.Path);
+
+        await azure.LinkBugToCaseAsync(81, 42);
+        Assert.Contains("System.LinkTypes.Related", handler.Body);
+        Assert.Contains("/workitems/81?api-version=7.1", handler.Path);
+    }
+    private sealed class StaticCredentials : ICredentialProvider
+    {
+        public ValueTask<Credential> GetCredentialAsync(CancellationToken token = default) =>
+            ValueTask.FromResult(new Credential("Bearer", "token"));
     }
 
     private sealed class CaptureHandler(string responseJson) : HttpMessageHandler

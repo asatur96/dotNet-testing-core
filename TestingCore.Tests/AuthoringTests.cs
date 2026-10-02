@@ -1,4 +1,7 @@
-using TestingCore;
+using TestingCore.Domain;
+using TestingCore.Ports;
+using TestingCore.Application;
+using TestingCore.Infrastructure;
 
 namespace TestingCore.Tests;
 
@@ -7,7 +10,7 @@ public sealed class AuthoringTests(BackendFixture fixture) : IClassFixture<Backe
 {
     public static IEnumerable<object[]> Cases => RunWith.Cases(new RunOptions(
         Languages: [TestLanguage.EN, TestLanguage.HY],
-        Platforms: [TestPlatform.Web, TestPlatform.Mobile],
+        Platforms: [TestPlatform.Api],
         IsAuthorized: false));
 
     [Theory]

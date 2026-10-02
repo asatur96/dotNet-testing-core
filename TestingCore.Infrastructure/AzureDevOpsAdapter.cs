@@ -1,3 +1,5 @@
+using TestingCore.Domain;
+using TestingCore.Ports;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -5,11 +7,11 @@ using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
 
-namespace TestingCore;
+namespace TestingCore.Infrastructure;
 
 public sealed class AzureDevOpsAdapter(
-    HttpClient http, string organization, string project, Func<CancellationToken, Task<string>> accessToken)
-    : ITestManagementPort, IIssueTrackingPort
+    HttpClient http, string organization, string project, ICredentialProvider credentials)
+    : ITestManagementPort, IIssueTrackingPort, ITraceabilityPort
 {
     private string Root => $"https://dev.azure.com/{Uri.EscapeDataString(organization)}/{Uri.EscapeDataString(project)}/_apis/wit/workitems";
 
@@ -57,6 +59,23 @@ public sealed class AzureDevOpsAdapter(
         return json.RootElement.GetProperty("id").GetInt32().ToString();
     }
 
+    public Task LinkRequirementToCaseAsync(int requirementId, int caseId, CancellationToken cancellationToken = default) =>
+        AddLinkAsync(requirementId, caseId, "Microsoft.VSTS.Common.TestedBy-Forward", cancellationToken);
+
+    public Task LinkBugToCaseAsync(int bugId, int caseId, CancellationToken cancellationToken = default) =>
+        AddLinkAsync(bugId, caseId, "System.LinkTypes.Related", cancellationToken);
+
+    private async Task AddLinkAsync(int sourceId, int targetId, string relation, CancellationToken cancellationToken)
+    {
+        if (sourceId <= 0 || targetId <= 0) throw new ArgumentOutOfRangeException(nameof(sourceId));
+        var targetUrl = $"{Root}/{targetId}";
+        var patch = new object[]
+        {
+            new { op = "add", path = "/relations/-", value = new { rel = relation, url = targetUrl } }
+        };
+        using var response = await SendAsync(HttpMethod.Patch, $"{Root}/{sourceId}?api-version=7.1", patch, cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
     private static object[] CasePatch(TestCaseDefinition testCase) =>
     [
         Field("System.Title", testCase.Title),
@@ -77,7 +96,8 @@ public sealed class AzureDevOpsAdapter(
     private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, object? patch, CancellationToken cancellationToken)
     {
         using var request = new HttpRequestMessage(method, url);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await accessToken(cancellationToken));
+        var credential = await credentials.GetCredentialAsync(cancellationToken);
+        request.Headers.Authorization = new AuthenticationHeaderValue(credential.Scheme, credential.Value);
         if (patch is not null)
             request.Content = new StringContent(JsonSerializer.Serialize(patch), Encoding.UTF8, "application/json-patch+json");
         return await http.SendAsync(request, cancellationToken);

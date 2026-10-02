@@ -1,6 +1,8 @@
+using TestingCore.Domain;
+using TestingCore.Ports;
 using System.Text.RegularExpressions;
 
-namespace TestingCore;
+namespace TestingCore.Application;
 
 public sealed partial class TestCaseSync(ITestManagementPort management)
 {

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\TestingCore\TestingCore.csproj" />
+    <ProjectReference Include="..\TestingCore.Ports\TestingCore.Ports.csproj" />
+    <ProjectReference Include="..\TestingCore.Application\TestingCore.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
