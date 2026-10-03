@@ -12,7 +12,9 @@ public sealed class TestRunStatistics
 
 public sealed record TestRunFailure(
     Guid TestId, string Title, string SuiteName, string? Error,
-    string? CaseId, string? WorkerId);
+    string? CaseId, string? WorkerId, string? AzureRunId = null,
+    string? AzureResultId = null, string? AzureResultUrl = null,
+    IReadOnlyList<int>? BugIds = null);
 
 public sealed record TestRunSuiteFailure(Guid SuiteId, string SuiteName, string Error);
 
@@ -66,7 +68,11 @@ public sealed class TestRunSummary
                     context.Metadata.SuitePath.Count == 0 ? "Unknown suite" : string.Join(" > ", context.Metadata.SuitePath),
                     error is { Length: > 2000 } ? error[..2000] : error,
                     context.Metadata.TestManagement.CaseId,
-                    context.Metadata.ExecutionThreadId));
+                    context.Metadata.ExecutionThreadId,
+                    context.Metadata.TestManagement.RunId,
+                    context.Metadata.TestManagement.ResultId,
+                    context.Metadata.TestManagement.ResultUrl,
+                    context.Metadata.TestManagement.BugIds.ToArray()));
                 break;
             case TestStatus.Skipped:
                 Statistics.Skipped++;

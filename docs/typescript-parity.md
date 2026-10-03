@@ -5,8 +5,8 @@ Reference project: C:\Users\balya\Downloads\automation-tests
 | TypeScript layer | Current C# layer | Status |
 | --- | --- | --- |
 | testing-core domain contexts, artifacts, generators | TestingCore domain assembly | TestContext, StepContext, SuiteContext, typed test management metadata, run summary, artifacts, and generic generators implemented |
-| testing-core ports and application use cases | TestingCore.Ports and TestingCore.Application | HTTP, HTTP evidence policy, config, credential, Test Case, Bug, traceability ports; API and generic value assertions, case sync, work item linking, and run summary lifecycle implemented |
-| testing-core integration adapters | TestingCore.Infrastructure | Azure DevOps work items, environment config, credentials, HTTP with minimal recorded evidence, typed integration registry and atomic JSON summary store implemented |
+| testing-core ports and application use cases | TestingCore.Ports and TestingCore.Application | HTTP, HTTP evidence policy, config, credential, Test Case, Bug, traceability ports; API and generic value assertions, case sync, work item linking, Azure run/result publication, and run summary lifecycle implemented |
+| testing-core integration adapters | TestingCore.Infrastructure | Azure DevOps work items and test runs/results, environment config, credentials, HTTP with minimal recorded evidence, typed integration registry and atomic JSON summary store implemented |
 | playwright-lib fixture and Suite lifecycle | TestingCore.Xunit | Suite fixture, per-test context and DI scope, hooks, opt-in case sync and suite summary callbacks, result capture, RunWith theory bridge, TestStep implemented |
 | user-management-service | backend monolith source | Pending actual backend identity model |
 | services | backend monolith source | Pending actual application services, repositories, data and event contracts |

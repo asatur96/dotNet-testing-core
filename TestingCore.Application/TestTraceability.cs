@@ -10,10 +10,15 @@ public sealed class TestTraceability(ITraceabilityPort traceability)
         traceability.LinkRequirementToCaseAsync(
             requirementId, RequireCaseId(context), cancellationToken);
 
-    public Task LinkBugAsync(
-        int bugId, TestContext context, CancellationToken cancellationToken = default) =>
-        traceability.LinkBugToCaseAsync(
-            bugId, RequireCaseId(context), cancellationToken);
+    public async Task LinkBugAsync(
+        int bugId, TestContext context, CancellationToken cancellationToken = default)
+    {
+        if (bugId <= 0) throw new ArgumentOutOfRangeException(nameof(bugId));
+        var caseId = RequireCaseId(context);
+        if (context.Metadata.TestManagement.BugIds.Contains(bugId)) return;
+        await traceability.LinkBugToCaseAsync(bugId, caseId, cancellationToken);
+        context.Metadata.TestManagement.BugIds.Add(bugId);
+    }
 
     private static int RequireCaseId(TestContext context)
     {

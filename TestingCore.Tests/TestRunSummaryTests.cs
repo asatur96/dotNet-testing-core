@@ -21,6 +21,10 @@ public sealed class TestRunSummaryTests
             if (status == TestStatus.Failed)
             {
                 test.Metadata.TestManagement.CaseId = "123";
+                test.Metadata.TestManagement.RunId = "7";
+                test.Metadata.TestManagement.ResultId = "22";
+                test.Metadata.TestManagement.ResultUrl = "https://azure/result/22";
+                test.Metadata.TestManagement.BugIds.Add(67);
                 test.Metadata.ExecutionThreadId = "worker-2";
             }
             test.Finish(status, status == TestStatus.Failed ? new InvalidOperationException("failed") : null);
@@ -38,6 +42,10 @@ public sealed class TestRunSummaryTests
         Assert.Equal(1, summary.Statistics.TimedOut);
         Assert.Equal(1, summary.Statistics.Interrupted);
         Assert.Equal("123", Assert.Single(summary.Failures).CaseId);
+        Assert.Equal("7", Assert.Single(summary.Failures).AzureRunId);
+        Assert.Equal("22", Assert.Single(summary.Failures).AzureResultId);
+        Assert.Equal("https://azure/result/22", Assert.Single(summary.Failures).AzureResultUrl);
+        Assert.Equal([67], Assert.Single(summary.Failures).BugIds);
         Assert.Equal("worker-2", Assert.Single(summary.Failures).WorkerId);
         Assert.True(summary.HasFailures);
         Assert.Equal("main", summary.Metadata.Branch);
