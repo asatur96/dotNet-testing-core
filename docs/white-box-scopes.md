@@ -14,6 +14,17 @@ A suite fixture owns a root ServiceProvider built from the backend's actual serv
         });
     });
 
+For a successful service result, GenericAssertions records each validation as a step artifact and throws on failure:
+
+    await new TestStep(context).Run("handle command", "result has the expected state", async () =>
+    {
+        var result = await handler.Handle(validCommand);
+        new GenericAssertions(context).Value(result)
+            .ShouldContain(new { Status = "active" })
+            .ShouldSatisfy(value => value.Id != Guid.Empty, "assigned ID");
+    });
+
+ShouldHaveValue defaults to C# equality; use ComparisonMode.Deep for structural JSON equality. ShouldContain checks a substring, array member, or partial object. Assertions require an active step and store a ValidationArtifact before throwing. Display values mask long digit sequences and properties named like password or token; pass sensitive: true when a value has another sensitive shape. The comparison still uses the real values. TestStep labels and predicate expectation text should not contain secrets. HTTP request and response artifacts have their own capture policy and can still contain bodies.
 Replace MyCommandHandler, ValidationException, and invalidCommand with types from the backend. Build the root provider from the monolith's production registration method, overriding only the external ports the test must control. A scoped database context, repository, or application service is resolved once per test; the scope is disposed even when the body fails. The fixture owner disposes the root provider in DisposeAsync.
 
 Use direct calls for pure domain rules, application services, and repository behavior. Use the HTTP adapter only when routing, serialization, authentication middleware, or the public API contract is the behavior under test. Keeping those as separate test layers makes a failure easier to locate.

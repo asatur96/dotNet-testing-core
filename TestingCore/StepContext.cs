@@ -6,7 +6,11 @@ public sealed class StepContext(TestContext context, string action, string expec
     private bool _completed;
     public string Action { get; } = action;
     public string Expected { get; } = expected;
-    public void AddArtifact(StepArtifact artifact) => _artifacts.Add(artifact);
+    public void AddArtifact(StepArtifact artifact)
+    {
+        if (_completed) throw new InvalidOperationException("Step already completed");
+        _artifacts.Add(artifact);
+    }
     public void Pass() => Complete(StepStatus.Passed, null);
     public void Fail(Exception error) => Complete(StepStatus.Failed, error.ToString());
     private void Complete(StepStatus status, string? error)

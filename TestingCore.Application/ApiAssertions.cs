@@ -13,7 +13,8 @@ public sealed class ApiAssertions(TestContext context)
 
     public ApiAssertions ShouldHaveNonEmptyBody(ApiArtifact response)
     {
-        Record("Nonempty body", "nonempty", response.ResponseBody, !string.IsNullOrWhiteSpace(response.ResponseBody));
+        var nonempty = !string.IsNullOrWhiteSpace(response.ResponseBody);
+        Record("Nonempty body", "nonempty", nonempty ? "nonempty" : "empty", nonempty);
         return this;
     }
 
@@ -21,7 +22,10 @@ public sealed class ApiAssertions(TestContext context)
     {
         using var json = JsonDocument.Parse(response.ResponseBody);
         var actual = json.RootElement.GetProperty(property).ToString();
-        Record(property, expected?.ToString() ?? "null", actual, actual == expected?.ToString());
+        var expectedText = expected?.ToString() ?? "null";
+        var sensitive = SafeAssertionValue.IsSensitiveName(property);
+        Record(property, SafeAssertionValue.Format(expectedText, sensitive),
+            SafeAssertionValue.Format(actual, sensitive), actual == expectedText);
         return this;
     }
 

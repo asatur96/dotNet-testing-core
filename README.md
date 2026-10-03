@@ -12,7 +12,7 @@ C# backend testing core modeled on the TypeScript testing-core project. It has n
 - TestingCore.Tests: executable examples and contract-focused tests.
 - TestingCore.Impact.Cli: change-impact report from a component map and Git diff.
 
-The dependency direction is Infrastructure -> Ports/Application -> Domain; Xunit -> Domain. The test project is the composition root for examples. When copied under the backend monolith, reference the backend source project directly from TestingCore.Tests and construct its services/controllers through your production DI container or WebApplicationFactory. The HTTP adapter is only for tests that cross an HTTP boundary. ScopedSuiteFixture gives each direct service test a fresh .NET DI scope.
+The dependency direction is Infrastructure -> Ports/Application -> Domain; Xunit -> Domain. The test project is the composition root for examples. When copied under the backend monolith, reference the backend source project directly from TestingCore.Tests and construct its services/controllers through your production DI container or WebApplicationFactory. The HTTP adapter is only for tests that cross an HTTP boundary. ScopedSuiteFixture gives each direct service test a fresh .NET DI scope. GenericAssertions records structural, containment, and predicate checks as step validation artifacts for direct service tests.
 
 ## Authoring and integrations
 
