@@ -13,7 +13,13 @@ public sealed class SuiteContext(string name)
     public DateTimeOffset StartedAt { get; } = DateTimeOffset.UtcNow;
     public SuiteExecutionMetadata Metadata { get; } = new() { SuiteName = name, SuiteId = name };
     public IReadOnlyList<TestContext> Tests => _tests;
-    public bool HasFailures => _tests.Any(test => test.HasFailures);
+    public bool HasFailures => Metadata.Error is not null || _tests.Any(test => test.HasFailures);
+
+    public void RecordFailure(Exception error)
+    {
+        if (_result is not null) throw new InvalidOperationException("Suite already finished");
+        Metadata.Error = Metadata.Error is null ? error.ToString() : Metadata.Error + Environment.NewLine + error;
+    }
 
     public void AddTest(TestContext test)
     {

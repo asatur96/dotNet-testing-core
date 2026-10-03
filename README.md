@@ -6,8 +6,8 @@ C# backend testing core modeled on the TypeScript testing-core project. It has n
 
 - TestingCore: domain contexts, artifacts, Suite/RunWith model, and generators. This project has no infrastructure references.
 - TestingCore.Ports: contracts for HTTP testing, configuration, credentials, Test Cases, Bugs, traceability, and reporting.
-- TestingCore.Application: assertions and Test Case synchronization.
-- TestingCore.Infrastructure: HttpClient, Azure DevOps, process environment, credentials, and integration registry.
+- TestingCore.Application: assertions, Test Case synchronization, traceability, and run summary lifecycle.
+- TestingCore.Infrastructure: HttpClient, Azure DevOps, process environment, credentials, integration registry, and atomic JSON run summary store.
 - TestingCore.Xunit: runner bridge for Suite, RunWith, TestStep, hooks, and per-test lifecycle.
 - TestingCore.Tests: executable examples and contract-focused tests.
 
@@ -21,4 +21,4 @@ Set AZDO_ENABLED=true, AZDO_ORGANIZATION, and AZDO_PROJECT for Azure composition
 
 Run locally: dotnet test dotNet-testing-core.sln
 
-See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. See docs/typescript-parity.md for the TypeScript-to-C# mapping and current gaps. The live Azure connection requires your organization and project.
+See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. See docs/run-summary.md for aggregate evidence across suites. See docs/typescript-parity.md for the TypeScript-to-C# mapping and current gaps. The live Azure connection requires your organization and project.

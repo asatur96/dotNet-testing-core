@@ -6,7 +6,7 @@ Use one Azure Boards User Story or Product Backlog Item per behavior. Link it to
 
 The TestTraceability application use case reads the recorded case ID and calls the Azure adapter through ITraceabilityPort. The adapter exposes LinkRequirementToCaseAsync and LinkBugToCaseAsync. The former adds Microsoft.VSTS.Common.TestedBy-Forward from the requirement to the case; the latter adds a Related relation from the Bug to the case. Use the pipeline Tests tab to link a specific failed result to the Bug and requirement. Code-level links alone cannot identify a particular result without a run and result ID.
 
-Suggested chain: requirement -> Test Case -> pipeline result -> Bug -> fix -> release. Keep IDs and URLs in Azure work item links, not duplicate spreadsheets.
+Suggested chain: requirement -> Test Case -> pipeline result -> Bug -> fix -> release. Keep IDs and URLs in Azure work item links, not duplicate spreadsheets. Publish the JSON run summary as a pipeline artifact alongside TRX; it contains case IDs, failure details, and build metadata for triage. The summary is evidence, while Azure Boards remains the work item system of record.
 
 ## Release readiness in Boards
 

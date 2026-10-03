@@ -11,15 +11,26 @@ public sealed record SuiteHooks(
     Func<Task>? AfterEach = null);
 
 public abstract class SuiteFixture(
-    string name, SuiteHooks? hooks = null, Func<TestContext, Task>? onTestFinishing = null) : IAsyncLifetime
+    string name, SuiteHooks? hooks = null,
+    Func<TestContext, Task>? onTestFinishing = null,
+    Func<SuiteContext, Task>? onSuiteFinished = null) : IAsyncLifetime
 {
     private readonly SuiteHooks _hooks = hooks ?? new();
     private readonly Func<TestContext, Task>? _onTestFinishing = onTestFinishing;
+    private readonly Func<SuiteContext, Task>? _onSuiteFinished = onSuiteFinished;
     public SuiteContext Suite { get; } = new(name);
 
     public virtual async Task InitializeAsync()
     {
-        if (_hooks.BeforeAll is not null) await _hooks.BeforeAll();
+        try
+        {
+            if (_hooks.BeforeAll is not null) await _hooks.BeforeAll();
+        }
+        catch (Exception error)
+        {
+            Suite.RecordFailure(error);
+            throw;
+        }
     }
 
     public async Task RunAsync(string title, Func<TestContext, Task> body)
@@ -66,13 +77,27 @@ public abstract class SuiteFixture(
 
     public virtual async Task DisposeAsync()
     {
+        Exception? failure = null;
         try
         {
             if (_hooks.AfterAll is not null) await _hooks.AfterAll();
         }
-        finally
+        catch (Exception error)
         {
-            Suite.FinalizeSuite();
+            Suite.RecordFailure(error);
+            failure = error;
         }
+
+        Suite.FinalizeSuite();
+        try
+        {
+            if (_onSuiteFinished is not null) await _onSuiteFinished(Suite);
+        }
+        catch (Exception error)
+        {
+            failure = failure is null ? error : new AggregateException(failure, error);
+        }
+
+        if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();
     }
 }

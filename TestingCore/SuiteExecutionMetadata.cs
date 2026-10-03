@@ -8,4 +8,5 @@ public sealed class SuiteExecutionMetadata
     public DateTimeOffset? FinishedAt { get; internal set; }
     public TimeSpan? Duration { get; internal set; }
     public TestStatus Status { get; internal set; } = TestStatus.Unknown;
+    public string? Error { get; internal set; }
 }
