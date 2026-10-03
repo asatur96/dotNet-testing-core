@@ -23,11 +23,14 @@ public sealed class TestResultWorkflow(
         if (context.FinishedAt is null)
             throw new InvalidOperationException("Test must be finished before result publication");
         Exception? publicationError = null;
-        if (runPublisher is not null && !string.IsNullOrWhiteSpace(azureRunId))
+        var currentRunId = azureRunId;
+        if (runPublisher is not null && string.IsNullOrWhiteSpace(currentRunId) && summary is not null)
+            currentRunId = (await summary.GetAsync()).AzureRunId;
+        if (runPublisher is not null && !string.IsNullOrWhiteSpace(currentRunId))
         {
             try
             {
-                await runPublisher.PublishResultAsync(azureRunId!, context);
+                await runPublisher.PublishResultAsync(currentRunId, context);
             }
             catch (Exception error)
             {

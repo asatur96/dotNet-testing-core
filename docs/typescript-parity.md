@@ -14,7 +14,7 @@ Reference project: C:\Users\balya\Downloads\automation-tests
 
 HTTP parity detail: the C# adapter returns a full API artifact as the TypeScript client does, but its recorded step copy omits bodies and query values by default. HTTP calls without an active step do not attach evidence. See docs/http-evidence.md.
 
-The TypeScript baseTest fixture syncs a case, publishes its result, then aggregates the run summary after a test finishes. TestResultWorkflow uses the same order in the C# SuiteFixture callbacks. Azure run creation and completion stay in the consumer composition root.
+The TypeScript baseTest fixture syncs a case, publishes its result, then aggregates the run summary after a test finishes. TestResultWorkflow uses the same order in the C# SuiteFixture callbacks. TestExecutionSession performs run setup and teardown in the consumer composition root. The TypeScript runtime uses a separate run-state JSON file; C# stores the Azure run reference in its atomic summary JSON, which fixtures can read across processes.
 
 Design rule: TestingCore.Domain has no xUnit, Azure, or HTTP dependency. TestingCore.Xunit is the runner bridge, just as playwright-lib is the Playwright bridge. Adding another runner should reuse domain/application/ports and replace this bridge.
 

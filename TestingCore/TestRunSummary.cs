@@ -25,6 +25,9 @@ public sealed record TestRunMetadata(
 public sealed class TestRunSummary
 {
     public string RunId { get; set; } = "";
+    public string? AzureRunId { get; set; }
+    public string? AzureRunUrl { get; set; }
+    public DateTimeOffset? AzureRunClosedAt { get; set; }
     public DateTimeOffset StartedAt { get; set; }
     public DateTimeOffset? FinishedAt { get; set; }
     public TestRunStatistics Statistics { get; set; } = new();
@@ -46,6 +49,21 @@ public sealed class TestRunSummary
         };
     }
 
+    public void AttachAzureRun(string id, string url)
+    {
+        if (FinishedAt is not null) throw new InvalidOperationException("Run already finished");
+        if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(url))
+            throw new ArgumentException("Azure run ID and URL are required");
+        if (AzureRunId is not null && (AzureRunId != id || AzureRunUrl != url))
+            throw new InvalidOperationException("A different Azure run is already attached");
+        AzureRunId = id;
+        AzureRunUrl = url;
+    }
+    public void MarkAzureRunClosed(DateTimeOffset closedAt)
+    {
+        if (AzureRunId is null) throw new InvalidOperationException("No Azure run is attached");
+        AzureRunClosedAt ??= closedAt;
+    }
     public void Record(TestContext context)
     {
         if (FinishedAt is not null) throw new InvalidOperationException("Run already finished");

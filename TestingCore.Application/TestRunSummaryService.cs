@@ -13,6 +13,21 @@ public sealed class TestRunSummaryService(ITestRunSummaryStore store)
             return TestRunSummary.Start(runId, metadata);
         }, cancellationToken);
 
+    public Task<TestRunSummary> AttachAzureRunAsync(
+        TestRunReference run, CancellationToken cancellationToken = default) =>
+        store.UpdateAsync(existing =>
+        {
+            var summary = existing ?? throw new InvalidOperationException("Run summary not initialized");
+            summary.AttachAzureRun(run.Id, run.Url);
+            return summary;
+        }, cancellationToken);
+    public Task<TestRunSummary> MarkAzureRunClosedAsync(CancellationToken cancellationToken = default) =>
+        store.UpdateAsync(existing =>
+        {
+            var summary = existing ?? throw new InvalidOperationException("Run summary not initialized");
+            summary.MarkAzureRunClosed(DateTimeOffset.UtcNow);
+            return summary;
+        }, cancellationToken);
     public Task<TestRunSummary> RecordAsync(TestContext context, CancellationToken cancellationToken = default) =>
         store.UpdateAsync(existing =>
         {
