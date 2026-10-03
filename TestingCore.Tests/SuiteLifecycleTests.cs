@@ -49,5 +49,24 @@ public sealed class SuiteLifecycleTests
         Assert.Contains("broken", Assert.Single(fixture.Suite.Tests).Metadata.Error);
     }
 
+    [Fact]
+    public async Task Completion_callback_failure_is_recorded_in_test_and_suite()
+    {
+        var fixture = new CompletionFixture();
+        await fixture.InitializeAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fixture.RunAsync("case sync", _ => Task.CompletedTask));
+        await fixture.DisposeAsync();
+
+        var test = Assert.Single(fixture.Suite.Tests);
+        Assert.Equal(TestStatus.Failed, test.Status);
+        Assert.Contains("sync failed", test.Error);
+        Assert.Equal(TestStatus.Failed, fixture.Suite.FinalizeSuite().Status);
+    }
+
+    private sealed class CompletionFixture() : SuiteFixture(
+        "example", onTestFinishing: _ => throw new InvalidOperationException("sync failed"));
+
     private sealed class ExampleFixture(SuiteHooks hooks) : SuiteFixture("example", hooks);
 }

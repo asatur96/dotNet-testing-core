@@ -12,6 +12,7 @@ public sealed class TestExecutionMetadata
     public string? Environment { get; set; }
     public string? Project { get; set; }
     public List<string> Tags { get; } = [];
+    public TestManagementMetadata TestManagement { get; } = new();
     public Dictionary<string, object?> Integrations { get; } = [];
     public Dictionary<string, object?> Extensions { get; } = [];
     public string? Error { get; internal set; }

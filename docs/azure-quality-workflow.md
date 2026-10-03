@@ -2,9 +2,9 @@
 
 ## Traceability model
 
-Use one Azure Boards User Story or Product Backlog Item per behavior. Link it to a Test Case with the Tested By relation. Keep one stable Test Case ID in the automated test title as @C123. The TestCaseSync use case updates that case from recorded steps when explicitly invoked. Link confirmed product defects as Bugs to the Test Case and to the failed pipeline result. Several failures can point to the same Bug when they share one cause.
+Use one Azure Boards User Story or Product Backlog Item per behavior. Link it to a Test Case with the Tested By relation. Keep one stable Test Case ID in the automated test title as @C123. The TestCaseSync use case updates that case from recorded steps when explicitly invoked or attached to SuiteFixture via onTestFinishing. It stores the returned case ID in TestContext.Metadata.TestManagement.CaseId. A test can opt out with TestManagement.Skip. If a case is newly created, add its @C tag to the test title before the next run; otherwise another context will create another case. Link confirmed product defects as Bugs to the Test Case and to the failed pipeline result. Several failures can point to the same Bug when they share one cause.
 
-The Azure adapter exposes LinkRequirementToCaseAsync and LinkBugToCaseAsync. The former adds Microsoft.VSTS.Common.TestedBy-Forward from the requirement to the case; the latter adds a Related relation from the Bug to the case. Use the pipeline Tests tab to link a specific failed result to the Bug and requirement. Code-level links alone cannot identify a particular result without a run and result ID.
+The TestTraceability application use case reads the recorded case ID and calls the Azure adapter through ITraceabilityPort. The adapter exposes LinkRequirementToCaseAsync and LinkBugToCaseAsync. The former adds Microsoft.VSTS.Common.TestedBy-Forward from the requirement to the case; the latter adds a Related relation from the Bug to the case. Use the pipeline Tests tab to link a specific failed result to the Bug and requirement. Code-level links alone cannot identify a particular result without a run and result ID.
 
 Suggested chain: requirement -> Test Case -> pipeline result -> Bug -> fix -> release. Keep IDs and URLs in Azure work item links, not duplicate spreadsheets.
 

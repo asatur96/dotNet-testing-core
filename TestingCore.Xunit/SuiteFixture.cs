@@ -10,9 +10,11 @@ public sealed record SuiteHooks(
     Func<Task>? BeforeEach = null,
     Func<Task>? AfterEach = null);
 
-public abstract class SuiteFixture(string name, SuiteHooks? hooks = null) : IAsyncLifetime
+public abstract class SuiteFixture(
+    string name, SuiteHooks? hooks = null, Func<TestContext, Task>? onTestFinishing = null) : IAsyncLifetime
 {
     private readonly SuiteHooks _hooks = hooks ?? new();
+    private readonly Func<TestContext, Task>? _onTestFinishing = onTestFinishing;
     public SuiteContext Suite { get; } = new(name);
 
     public virtual async Task InitializeAsync()
@@ -42,6 +44,14 @@ public abstract class SuiteFixture(string name, SuiteHooks? hooks = null) : IAsy
             try
             {
                 if (_hooks.AfterEach is not null) await _hooks.AfterEach();
+            }
+            catch (Exception error)
+            {
+                failure = failure is null ? error : new AggregateException(failure, error);
+            }
+            try
+            {
+                if (_onTestFinishing is not null) await _onTestFinishing(context);
             }
             catch (Exception error)
             {
