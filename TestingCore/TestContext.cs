@@ -65,6 +65,13 @@ public sealed class TestContext
     public void AddArtifact(StepArtifact artifact) =>
         (_active ?? throw new InvalidOperationException("No active step")).AddArtifact(artifact);
 
+    public bool TryAddArtifact(StepArtifact artifact)
+    {
+        if (_active is null) return false;
+        _active.AddArtifact(artifact);
+        return true;
+    }
+
     internal void Complete(StepContext scope, StepStatus status, string? error, IReadOnlyList<StepArtifact> artifacts)
     {
         if (!ReferenceEquals(_active, scope)) throw new InvalidOperationException("Step is not active");

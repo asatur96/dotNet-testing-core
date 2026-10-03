@@ -6,8 +6,12 @@ using TestingCore.Ports;
 
 namespace TestingCore.Infrastructure;
 
-public sealed class HttpTestClient(HttpClient http, TestContext context) : IHttpTestClient
+public sealed class HttpTestClient(
+    HttpClient http, TestContext context, IHttpArtifactEvidencePolicy? evidencePolicy = null) : IHttpTestClient
 {
+    private readonly IHttpArtifactEvidencePolicy _evidencePolicy =
+        evidencePolicy ?? new MinimalHttpArtifactEvidencePolicy();
+
     public async Task<ApiArtifact> SendAsync(HttpMethod method, string path, object? body = null, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(method, path);
@@ -24,7 +28,7 @@ public sealed class HttpTestClient(HttpClient http, TestContext context) : IHttp
         watch.Stop();
         var artifact = new ApiArtifact(method.Method, request.RequestUri?.ToString() ?? path,
             (int)response.StatusCode, requestBody, responseBody, watch.Elapsed, DateTimeOffset.UtcNow);
-        context.AddArtifact(artifact);
+        context.TryAddArtifact(_evidencePolicy.Prepare(artifact));
         return artifact;
     }
 }

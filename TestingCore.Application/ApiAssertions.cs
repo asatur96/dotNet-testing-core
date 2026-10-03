@@ -18,14 +18,14 @@ public sealed class ApiAssertions(TestContext context)
         return this;
     }
 
-    public ApiAssertions ShouldHaveJsonValue<T>(ApiArtifact response, string property, T expected)
+    public ApiAssertions ShouldHaveJsonValue<T>(ApiArtifact response, string property, T expected, bool sensitive = false)
     {
         using var json = JsonDocument.Parse(response.ResponseBody);
         var actual = json.RootElement.GetProperty(property).ToString();
         var expectedText = expected?.ToString() ?? "null";
-        var sensitive = SafeAssertionValue.IsSensitiveName(property);
-        Record(property, SafeAssertionValue.Format(expectedText, sensitive),
-            SafeAssertionValue.Format(actual, sensitive), actual == expectedText);
+        var hideValue = sensitive || SafeAssertionValue.IsSensitiveName(property);
+        Record(property, SafeAssertionValue.Format(expectedText, hideValue),
+            SafeAssertionValue.Format(actual, hideValue), actual == expectedText);
         return this;
     }
 

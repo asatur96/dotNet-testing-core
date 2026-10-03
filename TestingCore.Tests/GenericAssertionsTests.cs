@@ -57,6 +57,24 @@ public sealed class GenericAssertionsTests
     }
 
     [Fact]
+    public async Task Api_json_value_can_be_explicitly_hidden_from_validation_evidence()
+    {
+        var context = new TestContext();
+        var response = new ApiArtifact("GET", "/private", 200, null,
+            """{"code":"one-time-value"}""", TimeSpan.Zero, DateTimeOffset.UtcNow);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            context.StepAsync("check code", "code matches", () =>
+            {
+                new ApiAssertions(context).ShouldHaveJsonValue(response, "code", "wrong", sensitive: true);
+                return Task.CompletedTask;
+            }));
+
+        var artifact = Assert.IsType<ValidationArtifact>(Assert.Single(Assert.Single(context.Steps).Artifacts));
+        Assert.Equal("[redacted]", artifact.Actual);
+        Assert.DoesNotContain("one-time-value", error.Message);
+    }
+    [Fact]
     public async Task Api_body_validation_does_not_copy_the_body_into_validation_evidence()
     {
         var context = new TestContext();

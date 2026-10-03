@@ -5,12 +5,14 @@ Reference project: C:\Users\balya\Downloads\automation-tests
 | TypeScript layer | Current C# layer | Status |
 | --- | --- | --- |
 | testing-core domain contexts, artifacts, generators | TestingCore domain assembly | TestContext, StepContext, SuiteContext, typed test management metadata, run summary, artifacts, and generic generators implemented |
-| testing-core ports and application use cases | TestingCore.Ports and TestingCore.Application | HTTP, config, credential, Test Case, Bug, traceability ports; API and generic value assertions, case sync, work item linking, and run summary lifecycle implemented |
-| testing-core integration adapters | TestingCore.Infrastructure | Azure DevOps work items, environment config, credentials, HTTP, typed integration registry and atomic JSON summary store implemented |
+| testing-core ports and application use cases | TestingCore.Ports and TestingCore.Application | HTTP, HTTP evidence policy, config, credential, Test Case, Bug, traceability ports; API and generic value assertions, case sync, work item linking, and run summary lifecycle implemented |
+| testing-core integration adapters | TestingCore.Infrastructure | Azure DevOps work items, environment config, credentials, HTTP with minimal recorded evidence, typed integration registry and atomic JSON summary store implemented |
 | playwright-lib fixture and Suite lifecycle | TestingCore.Xunit | Suite fixture, per-test context and DI scope, hooks, opt-in case sync and suite summary callbacks, result capture, RunWith theory bridge, TestStep implemented |
 | user-management-service | backend monolith source | Pending actual backend identity model |
 | services | backend monolith source | Pending actual application services, repositories, data and event contracts |
 | ui-api-tests consumer | TestingCore.Tests | Framework examples only; no monolith project reference yet |
+
+HTTP parity detail: the C# adapter returns a full API artifact as the TypeScript client does, but its recorded step copy omits bodies and query values by default. HTTP calls without an active step do not attach evidence. See docs/http-evidence.md.
 
 Design rule: TestingCore.Domain has no xUnit, Azure, or HTTP dependency. TestingCore.Xunit is the runner bridge, just as playwright-lib is the Playwright bridge. Adding another runner should reuse domain/application/ports and replace this bridge.
 

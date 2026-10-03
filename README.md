@@ -22,4 +22,4 @@ Set AZDO_ENABLED=true, AZDO_ORGANIZATION, and AZDO_PROJECT for Azure composition
 
 Run locally: dotnet test dotNet-testing-core.sln
 
-See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. See docs/change-impact.md for component coupling and affected-test selection. See docs/run-summary.md for aggregate evidence across suites and docs/white-box-scopes.md for direct source testing through DI. See docs/typescript-parity.md for the TypeScript-to-C# mapping and current gaps. The live Azure connection requires your organization and project.
+See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. See docs/change-impact.md for component coupling and affected-test selection. See docs/http-evidence.md for the default HTTP evidence policy and custom policy port. See docs/run-summary.md for aggregate evidence across suites and docs/white-box-scopes.md for direct source testing through DI. See docs/typescript-parity.md for the TypeScript-to-C# mapping and current gaps. The live Azure connection requires your organization and project.
