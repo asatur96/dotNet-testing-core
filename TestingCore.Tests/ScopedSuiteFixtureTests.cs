@@ -37,15 +37,38 @@ public sealed class ScopedSuiteFixtureTests
         Assert.Equal(TestStatus.Failed, fixture.Suite.Tests[1].Status);
     }
 
+    [Fact]
+    public async Task Post_finish_callback_runs_before_the_backend_scope_is_disposed()
+    {
+        ScopedProbe? probe = null;
+        var fixture = new ProbeFixture(new SuiteHooks(), context =>
+        {
+            Assert.Equal(TestStatus.Passed, context.Status);
+            Assert.NotNull(probe);
+            Assert.False(probe.Disposed);
+            return Task.CompletedTask;
+        });
+        await fixture.InitializeAsync();
+
+        await fixture.RunScopedAsync("scoped result", (_, services) =>
+        {
+            probe = services.GetRequiredService<ScopedProbe>();
+            return Task.CompletedTask;
+        });
+        await fixture.DisposeAsync();
+
+        Assert.True(probe!.Disposed);
+    }
     private sealed class ProbeFixture : ScopedSuiteFixture
     {
         private readonly ServiceProvider _root;
 
-        public ProbeFixture(SuiteHooks hooks) : this(
-            new ServiceCollection().AddScoped<ScopedProbe>().BuildServiceProvider(), hooks) { }
+        public ProbeFixture(SuiteHooks hooks, Func<TestContext, Task>? onTestFinished = null) : this(
+            new ServiceCollection().AddScoped<ScopedProbe>().BuildServiceProvider(), hooks, onTestFinished) { }
 
-        private ProbeFixture(ServiceProvider root, SuiteHooks hooks)
-            : base("source tests", root.GetRequiredService<IServiceScopeFactory>(), hooks)
+        private ProbeFixture(ServiceProvider root, SuiteHooks hooks, Func<TestContext, Task>? onTestFinished)
+            : base("source tests", root.GetRequiredService<IServiceScopeFactory>(), hooks,
+                onTestFinished: onTestFinished)
         {
             _root = root;
         }

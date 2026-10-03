@@ -13,11 +13,13 @@ public sealed record SuiteHooks(
 public abstract class SuiteFixture(
     string name, SuiteHooks? hooks = null,
     Func<TestContext, Task>? onTestFinishing = null,
-    Func<SuiteContext, Task>? onSuiteFinished = null) : IAsyncLifetime
+    Func<SuiteContext, Task>? onSuiteFinished = null,
+    Func<TestContext, Task>? onTestFinished = null) : IAsyncLifetime
 {
     private readonly SuiteHooks _hooks = hooks ?? new();
     private readonly Func<TestContext, Task>? _onTestFinishing = onTestFinishing;
     private readonly Func<SuiteContext, Task>? _onSuiteFinished = onSuiteFinished;
+    private readonly Func<TestContext, Task>? _onTestFinished = onTestFinished;
     public SuiteContext Suite { get; } = new(name);
 
     public virtual async Task InitializeAsync()
@@ -70,6 +72,15 @@ public abstract class SuiteFixture(
             }
             context.Finish(failure is null ? TestStatus.Passed : TestStatus.Failed, failure);
             Suite.AddTest(context);
+            try
+            {
+                if (_onTestFinished is not null) await _onTestFinished(context);
+            }
+            catch (Exception error)
+            {
+                Suite.RecordFailure(error);
+                failure = failure is null ? error : new AggregateException(failure, error);
+            }
         }
 
         if (failure is not null) ExceptionDispatchInfo.Capture(failure).Throw();

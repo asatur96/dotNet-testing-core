@@ -9,12 +9,12 @@ Initialize a unique summary path once before suites run:
     await summary.InitializeAsync("run-123",
         new TestRunMetadata("test", "main", "commit-sha", "CI"));
 
-Pass a callback to a SuiteFixture subclass so its finalized tests and suite hook failures are recorded:
+For a local-only summary, pass a callback to a SuiteFixture subclass so its finalized tests and suite hook failures are recorded:
 
     public sealed class PaymentFixture(TestRunSummaryService summary) : SuiteFixture(
         "payments", onSuiteFinished: suite => summary.RecordSuiteAsync(suite));
 
-After every suite fixture has disposed, call FinalizeAsync and GetAsync. Publish the JSON file as a pipeline artifact alongside the xUnit TRX file. An Azure dashboard or incident task can link the artifact URL; it is separate from an Azure Test Run. If both callbacks are composed, publish the Azure run before recording the summary so its result IDs are included.
+When publishing Azure results, use TestResultWorkflow with onTestFinishing, onTestFinished, and onSuiteFinished instead; it records each completed test after Azure publication and still records it if publication fails. After every suite fixture has disposed, call FinalizeAsync and GetAsync. Publish the JSON file as a pipeline artifact alongside the xUnit TRX file. An Azure dashboard or incident task can link the artifact URL; it is separate from an Azure Test Run. For the suite-level publisher, publish the Azure run before recording the suite summary so result IDs are included.
 
 FileTestRunSummaryStore locks a sidecar .lock file for each read/update and replaces JSON while holding the lock. Parallel fixtures and processes using the same path cannot overwrite each other's counts. Each test and suite ID is recorded once. A missing summary, duplicate initialization, incomplete test, or write after finalization fails explicitly.
 

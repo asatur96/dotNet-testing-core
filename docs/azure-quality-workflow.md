@@ -10,11 +10,21 @@ Suggested chain: requirement -> Test Case -> pipeline result -> Bug -> fix -> re
 
 ## Automated run results
 
-TestRunPublisher follows the TypeScript create run -> publish result -> close run lifecycle through ITestExecutionPort. AzureDevOpsAdapter implements the port with the Azure Test 7.1 REST API. This is opt-in: construct the publisher with the Azure adapter and call PublishSuiteAsync from SuiteFixture.onSuiteFinished after TestCaseSync has recorded case IDs. The publisher creates an automated run, adds one result for each completed, managed test, then completes the run. Record the JSON suite summary after publication if it should contain Azure result IDs. It stores the Azure run ID, result ID, and result URL in each TestContext.TestManagement metadata. Tests with Skip=true or no CaseId are omitted. An API failure propagates to the fixture caller and leaves the run open for investigation.
+TestRunPublisher follows the TypeScript create run -> publish result -> close run lifecycle through ITestExecutionPort. AzureDevOpsAdapter implements the port with the Azure Test 7.1 REST API. The recommended per-test composition is TestResultWorkflow: create one Azure run and initialize one JSON summary before the suites, then supply its methods to the fixture callbacks. SuiteFixture calls onTestFinishing before TestContext.Finish for case sync, then onTestFinished after finalization for Azure publication and summary aggregation. Complete the Azure run and finalize the summary after all suites. This supports one run across multiple suites and matches the TypeScript fixture order.
 
-    var publisher = new TestRunPublisher(azureAdapter);
-    await publisher.PublishSuiteAsync(suite,
+    var run = await publisher.CreateAsync(
         new TestRunDefinition("Backend regression", executionId));
+    await summary.InitializeAsync(executionId);
+    var workflow = new TestResultWorkflow(caseSync, publisher, summary, run.Id);
+    // In the derived SuiteFixture constructor:
+    // onTestFinishing: workflow.OnTestFinishingAsync,
+    // onTestFinished: workflow.OnTestFinishedAsync,
+    // onSuiteFinished: workflow.OnSuiteFinishedAsync
+    // After all suite fixtures dispose:
+    await publisher.CompleteAsync(run.Id);
+    await summary.FinalizeAsync();
+
+This flow is opt-in. The publisher stores Azure run ID, result ID, and result URL in each TestContext.TestManagement metadata. Tests with Skip=true or no CaseId are omitted from Azure; if no Azure run ID exists, publication is skipped. Every finalized test is still counted in the local summary, and the suite callback captures teardown failures. If Azure publication fails, the local summary is still recorded and the suite reports the integration failure without changing the test's original outcome. PublishSuiteAsync remains available when a separate Azure run per suite is desired. A suite-level publication failure leaves the Azure run open for investigation.
 
 TestTraceability.LinkBugAsync records a confirmed Bug ID after its work item link succeeds. The publisher includes those IDs as associatedBugs on the result; it never creates a Bug for an unexplained failure. It publishes step names and outcomes as a concise comment, without raw exception messages or HTTP bodies. Keep step names free of secrets. A test can set TestManagement.PointId, and the run definition can include PlanId and PointIds when the organization has a managed Test Plan. A Test Case reference alone does not establish the full plan/suite/point context.
 
