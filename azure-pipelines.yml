@@ -16,10 +16,30 @@ steps:
   displayName: Restore
 - script: dotnet test dotNet-testing-core.sln --configuration Release --no-restore --logger "trx;LogFileName=results.trx" --results-directory "$(Agent.TempDirectory)/test-results"
   displayName: Backend tests
+  env:
+    TEST_RUN_SUMMARY_PATH: '$(Agent.TempDirectory)/test-results/run-summary.json'
 - task: PublishTestResults@2
+  displayName: Publish test results
   condition: always()
   inputs:
     testResultsFormat: VSTest
-    testResultsFiles: '$(Agent.TempDirectory)/test-results/*.trx'
-    failTaskOnFailedTests: false
-    testRunTitle: Backend tests
+    searchFolder: '$(Agent.TempDirectory)/test-results'
+    testResultsFiles: '*.trx'
+    failTaskOnFailedTests: true
+    failTaskOnFailureToPublishResults: true
+    failTaskOnMissingResultsFile: true
+    testRunTitle: 'Backend tests $(Build.BuildNumber)'
+- bash: |
+    if [ -f "$TEST_RUN_SUMMARY_PATH" ]; then
+      echo '##vso[task.setvariable variable=HasRunSummary]true'
+    fi
+  displayName: Check for run summary
+  condition: always()
+  env:
+    TEST_RUN_SUMMARY_PATH: '$(Agent.TempDirectory)/test-results/run-summary.json'
+- task: PublishPipelineArtifact@1
+  displayName: Publish run summary
+  condition: and(always(), eq(variables['HasRunSummary'], 'true'))
+  inputs:
+    targetPath: '$(Agent.TempDirectory)/test-results/run-summary.json'
+    artifact: test-run-summary

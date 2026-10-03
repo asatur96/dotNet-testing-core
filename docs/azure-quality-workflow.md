@@ -31,9 +31,16 @@ TestTraceability.LinkBugAsync records a confirmed Bug ID after its work item lin
 
 The implementation follows Microsoft's [create run](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/runs/create?view=azure-devops-rest-7.1), [add results](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/add?view=azure-devops-rest-7.1), and [update run](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/runs/update?view=azure-devops-rest-7.1) contracts. Local contract tests verify requests and mapping; this repository has no Azure organization credentials, so live permissions and behavior remain unverified.
 
+## Pipeline experiment
+
+The root azure-pipelines.yml runs the framework tests on .NET 10 for pushes and GitHub pull requests targeting main. Connect the GitHub repository in Azure DevOps Pipelines and select this YAML file. The test command emits TRX, and PublishTestResults publishes it to the pipeline Tests tab even when tests fail. Missing TRX or a publication error also fails the task. No Azure credential is required for this baseline.
+
+A consumer suite that uses TestExecutionSession should read TEST_RUN_SUMMARY_PATH and construct FileTestRunSummaryStore at that path. The pipeline publishes run-summary.json as an artifact only when the consumer writes it. This framework's own tests do not create that file. The TRX publisher creates a pipeline test run; enabling TestRunPublisher separately creates another Azure Test Run. Decide which run is authoritative for reporting before enabling both in a consumer pipeline, and verify Test Case links in the target organization.
+
 ## Free-plan experiment
 
 The first five Basic users are free. Basic + Test Plans is paid, with a 30-day trial that must be enabled and assigned to users. Basic access can execute tests, while full Test Plans authoring and management requires Basic + Test Plans or a qualifying Visual Studio subscription. Start with Boards Test Case and Bug work items plus pipeline TRX results under Basic; use the trial to check plan/suite/point workflows before paying. The REST run publication in this repository still needs the target project's Create test runs permission and should be verified against that organization. See Microsoft's [access guidance](https://learn.microsoft.com/en-us/azure/devops/test/manual-test-permissions?view=azure-devops), [paid access guidance](https://learn.microsoft.com/en-us/azure/devops/organizations/billing/buy-basic-access-add-users?view=azure-devops), and [trial steps](https://learn.microsoft.com/en-us/azure/devops/organizations/billing/try-additional-features-vs?view=azure-devops).
+
 ## Release readiness in Boards
 
 Create one Task titled Release readiness: version/environment. Give it an owner, date, build and pipeline run link. Add child Tasks for the gates below, each with an owner and evidence URL. Block the production environment with an approval/check until gates are reviewed.
