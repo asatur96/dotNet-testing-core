@@ -1,0 +1,46 @@
+{
+  "components": [
+    {
+      "name": "Domain",
+      "paths": ["TestingCore/**"],
+      "dependsOn": [],
+      "testFilter": "FullyQualifiedName~TestingCore.Tests"
+    },
+    {
+      "name": "Ports",
+      "paths": ["TestingCore.Ports/**"],
+      "dependsOn": ["Domain"],
+      "testFilter": "FullyQualifiedName~TestingCore.Tests"
+    },
+    {
+      "name": "Application",
+      "paths": ["TestingCore.Application/**"],
+      "dependsOn": ["Ports"],
+      "testFilter": "FullyQualifiedName~TestingCore.Tests"
+    },
+    {
+      "name": "Infrastructure",
+      "paths": ["TestingCore.Infrastructure/**"],
+      "dependsOn": ["Application"],
+      "testFilter": "FullyQualifiedName~TestingCore.Tests"
+    },
+    {
+      "name": "Xunit",
+      "paths": ["TestingCore.Xunit/**"],
+      "dependsOn": ["Domain"],
+      "testFilter": "FullyQualifiedName~TestingCore.Tests"
+    },
+    {
+      "name": "ImpactCli",
+      "paths": ["TestingCore.Impact.Cli/**"],
+      "dependsOn": ["Application", "Infrastructure"],
+      "testFilter": "FullyQualifiedName~TestingCore.Tests"
+    },
+    {
+      "name": "Tests",
+      "paths": ["TestingCore.Tests/**"],
+      "dependsOn": ["Domain", "Ports", "Application", "Infrastructure", "Xunit"],
+      "testFilter": "FullyQualifiedName~TestingCore.Tests"
+    }
+  ]
+}

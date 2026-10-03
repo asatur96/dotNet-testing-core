@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingCore.Infrastructure"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingCore.Xunit", "TestingCore.Xunit\TestingCore.Xunit.csproj", "{BB2FA3CF-217E-44FB-9445-120E5C417F75}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingCore.Impact.Cli", "TestingCore.Impact.Cli\TestingCore.Impact.Cli.csproj", "{496E5208-0629-4304-8570-760401A988D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{BB2FA3CF-217E-44FB-9445-120E5C417F75}.Release|x64.Build.0 = Release|Any CPU
 		{BB2FA3CF-217E-44FB-9445-120E5C417F75}.Release|x86.ActiveCfg = Release|Any CPU
 		{BB2FA3CF-217E-44FB-9445-120E5C417F75}.Release|x86.Build.0 = Release|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Debug|x64.Build.0 = Debug|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Debug|x86.Build.0 = Debug|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Release|x64.ActiveCfg = Release|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Release|x64.Build.0 = Release|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Release|x86.ActiveCfg = Release|Any CPU
+		{496E5208-0629-4304-8570-760401A988D0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

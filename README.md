@@ -10,6 +10,7 @@ C# backend testing core modeled on the TypeScript testing-core project. It has n
 - TestingCore.Infrastructure: HttpClient, Azure DevOps, process environment, credentials, integration registry, and atomic JSON run summary store.
 - TestingCore.Xunit: runner bridge for Suite, RunWith, TestStep, hooks, per-test lifecycle, and per-test .NET DI scopes.
 - TestingCore.Tests: executable examples and contract-focused tests.
+- TestingCore.Impact.Cli: change-impact report from a component map and Git diff.
 
 The dependency direction is Infrastructure -> Ports/Application -> Domain; Xunit -> Domain. The test project is the composition root for examples. When copied under the backend monolith, reference the backend source project directly from TestingCore.Tests and construct its services/controllers through your production DI container or WebApplicationFactory. The HTTP adapter is only for tests that cross an HTTP boundary. ScopedSuiteFixture gives each direct service test a fresh .NET DI scope.
 
@@ -21,4 +22,4 @@ Set AZDO_ENABLED=true, AZDO_ORGANIZATION, and AZDO_PROJECT for Azure composition
 
 Run locally: dotnet test dotNet-testing-core.sln
 
-See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. See docs/run-summary.md for aggregate evidence across suites and docs/white-box-scopes.md for direct source testing through DI. See docs/typescript-parity.md for the TypeScript-to-C# mapping and current gaps. The live Azure connection requires your organization and project.
+See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. See docs/change-impact.md for component coupling and affected-test selection. See docs/run-summary.md for aggregate evidence across suites and docs/white-box-scopes.md for direct source testing through DI. See docs/typescript-parity.md for the TypeScript-to-C# mapping and current gaps. The live Azure connection requires your organization and project.

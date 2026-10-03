@@ -13,7 +13,7 @@ Suggested chain: requirement -> Test Case -> pipeline result -> Bug -> fix -> re
 Create one Task titled Release readiness: version/environment. Give it an owner, date, build and pipeline run link. Add child Tasks for the gates below, each with an owner and evidence URL. Block the production environment with an approval/check until gates are reviewed.
 
 - Build from approved branch and reviewed changes.
-- Required unit and integration tests pass; explain quarantined/flaky tests.
+- Required unit and integration tests pass; explain quarantined/flaky tests. Attach the change-impact report and run the full suite for release sign-off.
 - Open critical/high Bugs are fixed or have a recorded risk acceptance.
 - Deployment and rollback procedure has been exercised.
 - Database migrations and compatibility have been reviewed.
