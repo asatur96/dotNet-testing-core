@@ -1,7 +1,5 @@
 using TestingCore.Domain;
-using TestingCore.Ports;
-using TestingCore.Application;
-using TestingCore.Infrastructure;
+using TestingCore.Xunit;
 
 namespace TestingCore.Tests;
 
@@ -17,19 +15,24 @@ public sealed class AuthoringTests(BackendFixture fixture) : IClassFixture<Backe
     [MemberData(nameof(Cases))]
     public async Task Health_check(RunCase run)
     {
-        var scope = fixture.CreateScope();
-        scope.Context.Metadata["suite"] = "Backend health";
-        scope.Context.Metadata["language"] = run.Language.ToString();
-        scope.Context.Metadata["platform"] = run.Platform.ToString();
-        scope.Context.Metadata["authorized"] = run.IsAuthorized.ToString();
-
-        await new TestStep(scope.Context).Run("GET /health", "200 and healthy", async () =>
+        TestContext? completed = null;
+        await fixture.RunAsync($"Health {run}", async context =>
         {
-            var response = await scope.Api.SendAsync(HttpMethod.Get, "/health");
-            scope.Expect.ShouldHaveStatus(response, 200)
-                .ShouldHaveJsonValue(response, "status", "healthy");
+            completed = context;
+            context.Metadata.Extensions["language"] = run.Language.ToString();
+            context.Metadata.Extensions["platform"] = run.Platform.ToString();
+            context.Metadata.Extensions["authorized"] = run.IsAuthorized.ToString();
+            var scope = fixture.CreateScope(context);
+
+            await new TestStep(context).Run("GET /health", "200 and healthy", async () =>
+            {
+                var response = await scope.Api.SendAsync(HttpMethod.Get, "/health");
+                scope.Expect.ShouldHaveStatus(response, 200)
+                    .ShouldHaveJsonValue(response, "status", "healthy");
+            });
         });
 
-        Assert.Equal(StepStatus.Passed, Assert.Single(scope.Context.Steps).Status);
+        Assert.Equal(TestStatus.Passed, completed!.Status);
+        Assert.Equal(StepStatus.Passed, Assert.Single(completed.Steps).Status);
     }
 }

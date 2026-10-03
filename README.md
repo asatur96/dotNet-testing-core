@@ -8,9 +8,10 @@ C# backend testing core modeled on the TypeScript testing-core project. It has n
 - TestingCore.Ports: contracts for HTTP testing, configuration, credentials, Test Cases, Bugs, traceability, and reporting.
 - TestingCore.Application: assertions and Test Case synchronization.
 - TestingCore.Infrastructure: HttpClient, Azure DevOps, process environment, credentials, and integration registry.
+- TestingCore.Xunit: runner bridge for Suite, RunWith, TestStep, hooks, and per-test lifecycle.
 - TestingCore.Tests: executable examples and contract-focused tests.
 
-The dependency direction is Infrastructure -> Ports/Application -> Domain. The test project is the composition root for examples. When copied under the backend monolith, reference the backend source project directly from TestingCore.Tests and construct its services/controllers through your production DI container or WebApplicationFactory. The HTTP adapter is only for tests that cross an HTTP boundary.
+The dependency direction is Infrastructure -> Ports/Application -> Domain; Xunit -> Domain. The test project is the composition root for examples. When copied under the backend monolith, reference the backend source project directly from TestingCore.Tests and construct its services/controllers through your production DI container or WebApplicationFactory. The HTTP adapter is only for tests that cross an HTTP boundary.
 
 ## Authoring and integrations
 
@@ -20,4 +21,4 @@ Set AZDO_ENABLED=true, AZDO_ORGANIZATION, and AZDO_PROJECT for Azure composition
 
 Run locally: dotnet test dotNet-testing-core.sln
 
-See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. The live Azure connection requires your organization and project.
+See docs/azure-quality-workflow.md for Test Case/Bug links, release readiness, RCA, and Azure access guidance. See docs/typescript-parity.md for the TypeScript-to-C# mapping and current gaps. The live Azure connection requires your organization and project.

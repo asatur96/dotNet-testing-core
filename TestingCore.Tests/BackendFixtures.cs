@@ -3,23 +3,30 @@ using TestingCore.Domain;
 using TestingCore.Ports;
 using TestingCore.Application;
 using TestingCore.Infrastructure;
+using TestingCore.Xunit;
 
 namespace TestingCore.Tests;
 
-public sealed class BackendFixture : IDisposable
+public sealed class BackendFixture : SuiteFixture
 {
     private readonly HttpClient _http = new(new StubHandler())
     {
         BaseAddress = new Uri("https://backend.test/")
     };
 
-    public BackendScope CreateScope()
+    public BackendFixture() : base("Backend health") { }
+
+    public BackendScope CreateScope(TestContext? context = null)
     {
-        var context = new TestContext();
+        context ??= new TestContext();
         return new BackendScope(context, new HttpTestClient(_http, context), new ApiAssertions(context));
     }
 
-    public void Dispose() => _http.Dispose();
+    public override async Task DisposeAsync()
+    {
+        try { await base.DisposeAsync(); }
+        finally { _http.Dispose(); }
+    }
 
     private sealed class StubHandler : HttpMessageHandler
     {

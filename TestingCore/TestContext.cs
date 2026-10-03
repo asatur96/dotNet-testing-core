@@ -1,6 +1,7 @@
 namespace TestingCore.Domain;
 
 public enum StepStatus { Passed, Failed }
+public enum TestStatus { Unknown, Passed, Failed, Skipped, TimedOut, Interrupted }
 
 public abstract record StepArtifact(DateTimeOffset Timestamp);
 public sealed record ApiArtifact(
@@ -19,13 +20,17 @@ public sealed class TestContext
 
     public Guid Id { get; } = Generators.Guid();
     public DateTimeOffset StartedAt { get; } = DateTimeOffset.UtcNow;
-    public Dictionary<string, string> Metadata { get; } = [];
+    public DateTimeOffset? FinishedAt { get; private set; }
+    public TestStatus Status { get; private set; } = TestStatus.Unknown;
+    public string? Error { get; private set; }
+    public TestExecutionMetadata Metadata { get; } = new();
     public IReadOnlyList<StepResult> Steps => _steps;
-    public bool HasFailures => _steps.Any(s => s.Status == StepStatus.Failed);
+    public bool HasFailures => Status == TestStatus.Failed || _steps.Any(s => s.Status == StepStatus.Failed);
 
     public StepContext StartStep(string action, string expected)
     {
         if (_active is not null) throw new InvalidOperationException("Previous step not completed");
+        if (FinishedAt is not null) throw new InvalidOperationException("Test already finished");
         return _active = new StepContext(this, action, expected);
     }
 
@@ -42,6 +47,19 @@ public sealed class TestContext
             step.Fail(error);
             throw;
         }
+    }
+
+    public void Finish(TestStatus status, Exception? error = null)
+    {
+        if (FinishedAt is not null) throw new InvalidOperationException("Test already finished");
+        if (_active is not null) throw new InvalidOperationException("Active step not completed");
+        Status = HasFailures ? TestStatus.Failed : status;
+        Error = error?.ToString();
+        FinishedAt = DateTimeOffset.UtcNow;
+        Metadata.Status = Status;
+        Metadata.FinishedAt = FinishedAt;
+        Metadata.Duration = FinishedAt.Value - StartedAt;
+        Metadata.Error = Error;
     }
 
     public void AddArtifact(StepArtifact artifact) =>
