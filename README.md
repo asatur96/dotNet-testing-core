@@ -17,7 +17,7 @@ The dependency direction is Infrastructure -> Ports/Application -> Domain; Xunit
 
 AuthoringTests shows Suite, RunWith, and TestStep. RunWith defaults to API platform and the EN/HY/RU language matrix; override these per suite. Each test gets a fresh TestContext. TestCaseSync understands @C123 markers but is opt-in to avoid unexpected Azure writes.
 
-Set AZDO_ENABLED=true, AZDO_ORGANIZATION, and AZDO_PROJECT for Azure composition. AzureCredentialProvider uses SYSTEM_ACCESSTOKEN in Pipelines or AZDO_PAT locally. The credential is resolved only when a request is made. Add an integration by registering an IntegrationDefinition in EnvConfigAdapter and an IIntegrationFactory in IntegrationRegistry; keep its secrets behind ISecretPort.
+Set AZDO_ENABLED=true, AZDO_ORGANIZATION, and AZDO_PROJECT for Azure composition. AzureCredentialProvider uses SYSTEM_ACCESSTOKEN in Pipelines or AZDO_PAT locally. The credential is resolved only when a request is made. Add an integration by registering an IntegrationDefinition in EnvConfigAdapter and an IIntegrationFactory<TServices> in IntegrationRegistry. The factory receives non-secret settings and an ISecretPort; resolve credentials only when the integration makes a call. See docs/integrations.md.
 
 Run locally: dotnet test dotNet-testing-core.sln
 

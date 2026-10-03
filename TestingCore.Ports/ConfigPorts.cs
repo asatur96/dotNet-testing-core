@@ -28,8 +28,8 @@ public interface ICredentialProvider
 
 public sealed record IntegrationServices(ITestManagementPort? TestManagement = null, IIssueTrackingPort? IssueTracking = null, ITraceabilityPort? Traceability = null);
 
-public interface IIntegrationFactory
+public interface IIntegrationFactory<out TServices> where TServices : class
 {
     string Name { get; }
-    IntegrationServices Create(IntegrationOptions options, HttpClient http, ISecretPort secrets);
+    TServices Create(IntegrationOptions options, ISecretPort secrets);
 }

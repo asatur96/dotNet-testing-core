@@ -1,6 +1,4 @@
-using TestingCore.Domain;
 using TestingCore.Ports;
-using TestingCore.Application;
 using TestingCore.Infrastructure;
 
 namespace TestingCore.Tests;
@@ -11,11 +9,11 @@ public sealed class IntegrationConfigurationTests
     public void Disabled_integration_does_not_read_secrets()
     {
         var secrets = new FakeSecrets();
-        var registry = new IntegrationRegistry(
-            new FakeConfig(false), secrets, new HttpClient())
-            .Register(new AzureDevOpsIntegrationFactory());
+        using var http = new HttpClient();
+        var registry = new IntegrationRegistry(new FakeConfig(false), secrets)
+            .Register(new AzureDevOpsIntegrationFactory(http));
 
-        Assert.Null(registry.Create("azureDevOps"));
+        Assert.Null(registry.Create<IntegrationServices>("azureDevOps"));
         Assert.Equal(0, secrets.Reads);
     }
 
@@ -23,11 +21,11 @@ public sealed class IntegrationConfigurationTests
     public void Enabled_integration_registers_its_ports_without_reading_secrets()
     {
         var secrets = new FakeSecrets();
-        var registry = new IntegrationRegistry(
-            new FakeConfig(true), secrets, new HttpClient())
-            .Register(new AzureDevOpsIntegrationFactory());
+        using var http = new HttpClient();
+        var registry = new IntegrationRegistry(new FakeConfig(true), secrets)
+            .Register(new AzureDevOpsIntegrationFactory(http));
 
-        var services = Assert.IsType<IntegrationServices>(registry.Create("azureDevOps"));
+        var services = Assert.IsType<IntegrationServices>(registry.Create<IntegrationServices>("azureDevOps"));
         Assert.NotNull(services.TestManagement);
         Assert.NotNull(services.IssueTracking);
         Assert.NotNull(services.Traceability);
@@ -66,14 +64,44 @@ public sealed class IntegrationConfigurationTests
         Assert.DoesNotContain("password", options.Settings.Keys);
         Assert.DoesNotContain("EMAIL_PASSWORD", env.ReadKeys);
     }
+
+    [Fact]
+    public void Custom_integration_can_be_added_without_changing_shared_services()
+    {
+        var secrets = new FakeSecrets(new Dictionary<string, string> { ["AUDIT_TOKEN"] = "audit-secret" });
+        var registry = new IntegrationRegistry(new FakeConfig(true), secrets)
+            .Register(new AuditFactory());
+
+        var audit = Assert.IsAssignableFrom<IAuditService>(registry.Create<IAuditService>("audit"));
+        Assert.Equal(0, secrets.Reads);
+        Assert.Equal("project:audit-secret", audit.Identify());
+        Assert.Equal(1, secrets.Reads);
+    }
+
+    [Fact]
+    public void Wrong_service_type_fails_before_loading_config_or_secrets()
+    {
+        var secrets = new FakeSecrets();
+        var config = new FakeConfig(true);
+        var registry = new IntegrationRegistry(config, secrets).Register(new AuditFactory());
+
+        Assert.Throws<InvalidOperationException>(() => registry.Create<IntegrationServices>("audit"));
+        Assert.Equal(0, config.Reads);
+        Assert.Equal(0, secrets.Reads);
+    }
+
     private sealed class FakeConfig(bool enabled) : IConfigPort
     {
-        public IntegrationOptions GetIntegration(string name) =>
-            new(enabled, new Dictionary<string, string>
+        public int Reads { get; private set; }
+        public IntegrationOptions GetIntegration(string name)
+        {
+            Reads++;
+            return new(enabled, new Dictionary<string, string>
             {
                 ["organization"] = "org",
                 ["project"] = "project"
             });
+        }
     }
 
     private sealed class FakeEnv(Dictionary<string, string> values) : IEnvPort
@@ -88,6 +116,7 @@ public sealed class IntegrationConfigurationTests
         }
         public bool GetBoolean(string name) => GetOptional(name) == "true";
     }
+
     private sealed class FakeSecrets(Dictionary<string, string>? values = null) : ISecretPort
     {
         public int Reads { get; private set; }
@@ -96,5 +125,22 @@ public sealed class IntegrationConfigurationTests
             Reads++;
             return values is not null && values.TryGetValue(name, out var value) ? value : null;
         }
+    }
+
+    private interface IAuditService
+    {
+        string Identify();
+    }
+
+    private sealed class AuditService(string project, ISecretPort secrets) : IAuditService
+    {
+        public string Identify() => $"{project}:{secrets.GetSecret("AUDIT_TOKEN")}";
+    }
+
+    private sealed class AuditFactory : IIntegrationFactory<IAuditService>
+    {
+        public string Name => "audit";
+        public IAuditService Create(IntegrationOptions options, ISecretPort secrets) =>
+            new AuditService(options.Settings["project"], secrets);
     }
 }

@@ -6,7 +6,7 @@ Reference project: C:\Users\balya\Downloads\automation-tests
 | --- | --- | --- |
 | testing-core domain contexts, artifacts, generators | TestingCore domain assembly | TestContext, StepContext, SuiteContext, metadata, artifacts, generators implemented |
 | testing-core ports and application use cases | TestingCore.Ports and TestingCore.Application | HTTP, config, credential, Test Case, Bug, traceability ports; assertions and case sync implemented |
-| testing-core integration adapters | TestingCore.Infrastructure | Azure DevOps work items, environment config, credentials, HTTP implemented |
+| testing-core integration adapters | TestingCore.Infrastructure | Azure DevOps work items, environment config, credentials, HTTP, typed integration registry implemented |
 | playwright-lib fixture and Suite lifecycle | TestingCore.Xunit | Suite fixture, per-test context, hooks, result capture, RunWith theory bridge, TestStep implemented |
 | user-management-service | backend monolith source | Pending actual backend identity model |
 | services | backend monolith source | Pending actual application services, repositories, data and event contracts |
