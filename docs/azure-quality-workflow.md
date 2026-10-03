@@ -23,7 +23,7 @@ TestRunPublisher follows the TypeScript create run -> publish result -> close ru
     // After all suite fixtures dispose:
     await session.CompleteAsync();
 
-Use the same summary file path in each fixture process. StartAsync runs once before tests; CompleteAsync runs once after them. A failed Azure close still finalizes the local summary, and another CompleteAsync call retries the close using its saved Azure run ID. The summary records when Azure close succeeds.
+Use the same summary file path in each fixture process. StartAsync runs once before tests; CompleteAsync runs once after them. For an xUnit v2 collection, ExecutionFixture owns this lifecycle and its registered suites; see xunit-execution.md. A failed Azure close still finalizes the local summary, and another CompleteAsync call retries the close using its saved Azure run ID. The summary records when Azure close succeeds.
 
 This flow is opt-in. The publisher stores Azure run ID, result ID, and result URL in each TestContext.TestManagement metadata. Tests with Skip=true or no CaseId are omitted from Azure; if no Azure run ID exists, publication is skipped. Every finalized test is still counted in the local summary, and the suite callback captures teardown failures. If Azure publication fails, the local summary is still recorded and the suite reports the integration failure without changing the test's original outcome. PublishSuiteAsync remains available when a separate Azure run per suite is desired. A suite-level publication failure leaves the Azure run open for investigation.
 

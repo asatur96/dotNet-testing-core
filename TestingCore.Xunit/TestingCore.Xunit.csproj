@@ -14,6 +14,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TestingCore\TestingCore.csproj" />
+    <ProjectReference Include="..\TestingCore.Application\TestingCore.Application.csproj" />
+    <ProjectReference Include="..\TestingCore.Ports\TestingCore.Ports.csproj" />
   </ItemGroup>
 
 </Project>
